@@ -1,0 +1,19 @@
+#the data wont be commited to github when you update the code
+*.csv
+#the video files wont be commited when you update the code
+*.mp4
+
+# other python things
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.pyre
+venv/
+env/
+.venv/
+ENV/
+
+# excludes data set used to train model; you can find it on roboflow
+*dataset*
