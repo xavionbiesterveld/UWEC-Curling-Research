@@ -64,7 +64,23 @@ def initialize_csv():
         writer = csv.DictWriter(f, fieldnames=FIELD_NAMES)
         writer.writeheader()
         
-# Initialize CSV once at start
+def validate_paths():
+    errors = []
+    
+    # Validate file paths
+    for path, desc in [
+        (VIDEO_PATH, "Source video"),
+        (MODEL_PATH, "YOLO model")
+    ]:
+        if not os.path.isfile(path):
+            errors.append(f"{desc} path validation failed - file not found: {path}")
+
+    if errors:
+        error_msg = "Critical path validation failed:\n" + "\n".join(errors)
+        raise FileNotFoundError(error_msg)
+
+
+validate_paths() 
 initialize_csv()
 
 video = cv2.VideoCapture(VIDEO_PATH)
