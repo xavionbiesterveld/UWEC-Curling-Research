@@ -1,15 +1,20 @@
 import cv2
 from ultralytics import YOLO
+import logging
 import math
 import webcolors
 import os
 import csv
 
+#uncomment line if you want to disable yolo model output to the terminal
+#logging.getLogger("ultralytics").setLevel(logging.ERROR)
+
 CLASS_LIST = ['BroomHead', 'Hack', 'Hogline', 'House', 'Player', 'Rock'] 
-VIDEO_PATH = os.path.join('video', 'curlingvideo.mp4')
+VIDEO_PATH = os.path.join('video', 'curling1.mp4')
 MODEL_PATH = os.path.join('model_v2', 'runs', 'train2', 'weights', 'best.pt')
 CONF_THRESHOLD = 0.63
 SAVE_INTERVAL = 100
+VISUALIZE = True
 DATA_DIR = 'parser_data'
 DATA_FILE = os.path.join(DATA_DIR, f'{os.path.splitext(os.path.basename(VIDEO_PATH))[0]}_frame_data.csv')
 FIELD_NAMES = ['frame', 'object_class', 'id', 'box_coords', 'center', 'color', 'radius']
@@ -41,13 +46,22 @@ def get_detection_properties(box):
 
     return box_properties
 
+def visualize_box(img, show_circ, coordinates, center, radius):
+    #visualize detections by placing bounding box on image
+    x1, y1, x2, y2 = coordinates
+    cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), 2)
+    
+    if show_circ:
+        cv2.circle(img, center, math.floor(radius), (0, 255, 0), 2)
+    return img
+
 def find_closest_color(RGB_value):
     #use euclidean distance to find the closest color name from CSS3 color names.
     #returns closest color name
     colors = {}
 
     def euclidean_distance(rgb1, rgb2):
-         return sum((a - b) ** 2 for a, b in zip(rgb1, rgb2)) ** 0.5
+         return sum((int(a) - int(b)) ** 2 for a, b in zip(rgb1, rgb2)) ** 0.5
 
     
     for name in webcolors.names('html4'):
@@ -108,7 +122,7 @@ while video_unfinished:
             if box_properties['object_class'] == 5 and box_properties['confidence'] >= CONF_THRESHOLD:
                 img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 color = find_closest_color(tuple(img_rgb[box_properties['center'][1], box_properties['center'][0]]))
-                
+
                 data.append({
                     'frame': frame_number,
                     'object_class': CLASS_LIST[box_properties['object_class']],
@@ -118,6 +132,11 @@ while video_unfinished:
                     'color': color,
                     'radius': box_properties['radius']
                 })
+                
+                if VISUALIZE == True:
+                    imgMask = visualize_box(imgMask, True, box_properties['coordinates'], box_properties['center'], box_properties['radius'])
+                    cv2.imshow('Img', imgMask)
+                    cv2.waitKey(0)
 
     
     frames_since_save += 1
