@@ -5,6 +5,7 @@
 
 # other python things
 __pycache__/
+*vscode*
 *.py[cod]
 *.pyc
 *.pyo

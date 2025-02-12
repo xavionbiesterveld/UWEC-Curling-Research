@@ -93,6 +93,22 @@ def validate_paths():
         error_msg = "Critical path validation failed:\n" + "\n".join(errors)
         raise FileNotFoundError(error_msg)
 
+def resize_image(img, target_resolution):
+    #takes the img and target_resolution as a tuple ex: (1920, 1080)
+    h, w = img.shape[:2]
+    target_w, target_h = target_resolution
+    
+    # Calculate scale factors for both dimensions
+    scale_x = target_w / w
+    scale_y = target_h / h
+    scale = min(scale_x, scale_y)  # Maintain aspect ratio
+    
+    # Calculate new dimensions
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+    
+    return cv2.resize(img, (new_w, new_h), interpolation=1)
+
 
 validate_paths() 
 initialize_csv()
