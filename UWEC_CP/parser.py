@@ -47,11 +47,13 @@ class Parser:
                 for box in result.boxes:
                     box_properties = get_detection_properties(box)
                     
-                    if box_properties['object_class'] == 5 and box_properties['confidence'] >= self.config.conf_threshold:
+                    if box_properties['object_class'] == 5 or box_properties['object_class'] == 4 and box_properties['confidence'] >= self.config.conf_threshold:
                         box_properties = get_calculated_detection_properties(box_properties)
                         
-                        
-                        color = new_find_color(img, box_properties['center'], int(box_properties['radius']), 50)
+                        if not box_properties['object_class'] == 4:
+                            color = new_find_color(img, box_properties['center'], int(box_properties['radius']), 50)
+                        else:
+                            color = None
                         
                         data.append({
                         'frame': frame_number,

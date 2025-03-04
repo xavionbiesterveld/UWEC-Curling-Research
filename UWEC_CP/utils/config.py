@@ -69,6 +69,6 @@ class Config:
             Data Directory: {self.data_dir}
             Data File Name: {self.data_file_name}
             Is Youtube: {self.is_yt}
-            Visualiz: {self.visualize}
+            Visualize: {self.visualize}
             Yolo Log: {self.yolo_log}
             '''

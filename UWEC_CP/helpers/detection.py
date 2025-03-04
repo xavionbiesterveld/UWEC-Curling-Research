@@ -28,7 +28,10 @@ def get_calculated_detection_properties(box_properties: dict) -> dict:
     x1, y1, x2, y2 = box_properties['coordinates']
     
     center = ((x1 + x2) // 2, (y1 + y2) // 2)
-    radius = (y2 - y1) / 2
+    if not box_properties['object_class'] == 4:
+        radius = (y2 - y1) / 2
+    else:
+        radius = None
     
     box_properties.update({
         'center': center,

@@ -18,3 +18,5 @@ ENV/
 
 # excludes data set used to train model; you can find it on roboflow
 *dataset*
+
+*.code-workspace
