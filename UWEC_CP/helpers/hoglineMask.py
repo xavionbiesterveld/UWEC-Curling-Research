@@ -6,11 +6,12 @@ image = cv2.imread("curlingimage1.png")
 #convert to grayscale
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-#perform binary thresholding
-kernel_size = 3
+# Apply histogram equalization
+equalized_image = cv2.equalizeHist(gray)
 
+#perform binary thresholding
 #i chose values between black and darker gray because I think thats the relative color of the hogline, if not we will have to test more
-ret,thresh = cv2.threshold(gray, 165, 255, cv2.THRESH_BINARY_INV)
+ret,thresh = cv2.threshold(equalized_image, 165, 255, cv2.THRESH_BINARY_INV)
 
 #find contours
 contours = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
