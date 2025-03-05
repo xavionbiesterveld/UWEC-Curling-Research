@@ -16,6 +16,8 @@ kernel_size = 3
 #i chose values between black and darker gray because I think thats the relative color of the hogline, if not we will have to test more
 ret,thresh = cv2.threshold(gray, 0, 30, cv2.THRESH_BINARY)
 
+cv2.imshow(gray)
+
 #find contours
 contours = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 contours = countours[0] if len(contours) == 2 else countours[1]
