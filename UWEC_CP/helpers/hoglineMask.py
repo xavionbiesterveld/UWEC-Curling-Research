@@ -18,7 +18,7 @@ ret,thresh = cv2.threshold(gray, 0, 30, cv2.THRESH_BINARY)
 
 #find contours
 contours = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-contours = countours[0] if len(contours) == 2 else countours[1]
+contours = contours[0] if len(contours) == 2 else contours[1]
 
 #draw countours
 radius = 2
