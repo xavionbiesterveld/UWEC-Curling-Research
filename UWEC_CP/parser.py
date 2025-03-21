@@ -66,7 +66,7 @@ class Parser:
                         })
                     
                         if self.config.visualize:
-                            imgMask = visualize_box(imgMask, tuple(box_properties['coordinates']), box_properties['center'], box_properties['radius'])
+                            imgMask = visualize_box(imgMask, box_properties)
                             cv2.imshow('Img', imgMask)
                             cv2.waitKey(0)
              

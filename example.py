@@ -3,7 +3,7 @@ from UWEC_CP import Parser
 
 
 
-config = Config('curling1.mp4', yolo_v2, visualize=False, save_interval=50, yolo_log=False)
+config = Config('curling1.mp4', yolo_v2, visualize=True, save_interval=50, yolo_log=False)
 
 print(config)
 
