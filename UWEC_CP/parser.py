@@ -51,7 +51,7 @@ class Parser:
                         box_properties = get_calculated_detection_properties(box_properties)
                         
                         if not box_properties['object_class'] == 4:
-                            color = new_find_color(img, box_properties['center'], int(box_properties['radius']), 50)
+                            color = new_find_color(img, box_properties)
                         else:
                             color = None
                         

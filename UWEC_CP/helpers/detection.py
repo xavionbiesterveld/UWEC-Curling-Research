@@ -82,7 +82,7 @@ def get_calculated_detection_properties(detection_dict: Dict[str, float | int | 
     return detection_dict
 
 
-def visualize_box(img: np.ndarray, detection_dict: Dict[str, float | int | tuple[int, int, int, int] | tuple[int, int] | None], show_circle: bool = True):
+def visualize_box(img: np.ndarray, detection_dict: Dict[str, float | int | tuple[int, int, int, int] | tuple[int, int] | None], show_circle: bool = True) -> np.ndarray:
     """Visualize a YOLO detection on a BGR image using bounding box and optional circle annotations.
 
     This function draws a red bounding box around a detected object and, if specified, a green circle
@@ -129,21 +129,56 @@ def visualize_box(img: np.ndarray, detection_dict: Dict[str, float | int | tuple
         
     return img
 
-def new_find_color(img, center, radius, n):    
+def new_find_color(img: np.ndarray, detection_dict: Dict[str, float | int | tuple[int, int, int, int] | tuple[int, int] | None], sample_number: int = 50) -> str:   
+    """Determine whether the color of a detection is red or yellow.
+    
+    This function samples an inputed amount of pixels from a detection and calculates
+    the distance between the BGR values a dictionary of colors and the median sample pixel.
+    
+    Args:
+        img (np.ndarray): A BGR image (height, width, 3) with dtype uint8, typically from cv2.imread(). 
+        detection_dict (dict): A dictionary containing detection properties from a YOLO Boxes object.
+           - 'center' (tuple[int, int]): Coordinates of the bounding box center (x, y).
+           - 'radius' (int or None): Half the height of the box, or None if object is not circular.
+        sample_number (int): The number of sample pixels that will be taken from the detection.
+        
+    Returns:
+        str: A string containing the name of the color detected.
+        
+    Raises:
+        AssertionError: If the sample number is less than zero or greater than the amount of pixels in the image.
+        TypeError: The radius must be an integer. 
+        ValueError: Image must be a BGR numpy array with shape (height, width, 3) and dtype uint8.
+    """ 
+    
+    if not (isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[2] == 3 and img.dtype == np.uint8):
+        raise ValueError("Image must be a BGR numpy array with shape (height, width, 3) and dtype uint8")
+    
+    radius = detection_dict['radius']
+    if not (isinstance(radius)):
+        raise TypeError(f"The radius must be an integer")
+    
+    #find height and width of the image
     height, width = img.shape[:2]
     
-    mask = np.zeros((height, width), dtype=np.uint8)
-    cv2.circle(mask, center, radius, 255, -1)
+    assert sample_number > 0 and sample_number < (height * width), "The sample size must be more than zero and less than the amount of pixels in the image"
     
+    #create a mask with the size of the image and draw a filled in circle onto it
+    mask = np.zeros((height, width), dtype=np.uint8)
+    cv2.circle(mask, detection_dict['center'], radius, 255, -1)
+    
+    #find all of the points of the circle
     points = np.argwhere(mask == 255)
     
-    n_samples = min(n, len(points))
+    #if the sample number is larger than the amount of pixels in the circle then use the amount of pixels in the circle
+    n_samples = min(sample_number, len(points))
+    
+    #select n sample pixels from circle
     selected_indices = np.random.choice(len(points), size=n_samples, replace=False)
     selected_points = points[selected_indices]
-    
     pixels = img[selected_points[:, 0], selected_points[:, 1]]
     
-    
+    #find the median of the color values from the list of sample pixels
     pixels_int = [(int(b), int(g), int(r)) for b, g, r in pixels]
     zip_channels = list(zip(*pixels_int))
     avg_pixel = (
@@ -157,20 +192,44 @@ def new_find_color(img, center, radius, n):
         'yellow': (0, 255, 255)
     }
     
+    #find the euclidean distance between the median pixel and the colors in the dictionary
     distances = {}
-    
     for key, value in colors.items():
         distance = sum((int(a) - int(b)) ** 2 for a, b in zip(avg_pixel, value)) ** 0.5
         
         distances.update({key: distance})
-        
+    
+    #select the color closest to the median pixel
     closest_color = min(distances, key=distances.get)
     return closest_color
 
-def resize_image(img, target_resolution):
+def resize_image(img: np.ndarray, target_resolution: tuple[int, int]) -> np.ndarray:
+    """Resizes an input image to a target resolution.
+
+    Args:
+        img (np.ndarray): A BGR image (height, width, 3) with dtype uint8, typically from cv2.imread(). 
+        target_resolution (tuple[int, int]): A tuple containing the height and width of the desired resolution. 
+
+    Returns:
+        np.ndarray: The image resized to the target resolution.
+        
+    Raises:
+        ValueError: Image must be a BGR numpy array with shape (height, width, 3) and dtype uint8.
+        TypeError: Resolution tuple must be a tuple of two integers.
+        AssertionError: The target height and width of the resolution must be greater than zero.
+    """
+    
+    if not (isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[2] == 3 and img.dtype == np.uint8):
+        raise ValueError("Image must be a BGR numpy array with shape (height, width, 3) and dtype uint8")
+    
+    if not (isinstance(target_resolution, tuple) and len(target_resolution) == 2 and all(isinstance(x, int) for x in target_resolution)):
+        raise TypeError("Target resolution must be a tuple of two integers (height, width)")
+
     #takes the img and target_resolution as a tuple ex: (1920, 1080)
     h, w = img.shape[:2]
     target_w, target_h = target_resolution
+    
+    assert target_w > 0 and target_h > 0, 'The height and width of the resoultion must be greater than zero'
     
     # Calculate scale factors for both dimensions
     scale_x = target_w / w
